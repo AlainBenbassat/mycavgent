@@ -1,0 +1,9 @@
+; $Id$
+ 
+name = MijnCavaria
+description = Portaal voor Cavaria leden
+package = Cavaria
+core = 7.x
+
+stylesheets[all][] = mijncavaria.css
+files[] = mijncavaria.module

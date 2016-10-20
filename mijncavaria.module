@@ -1,0 +1,74 @@
+<?php
+
+require_once 'MyCavariaIndividual.php';
+require_once 'MyCavariaOrganization.php';
+
+function mijncavaria_menu() {
+	$items = array();
+
+	$items['mijncavaria'] = array(
+		'title'            => t('Mijn Cavaria'),
+		'page callback'    => 'mijncavaria_show',
+		'access callback' => 'user_is_logged_in',
+		'description' => t('my organizations'),
+		'type' => MENU_CALLBACK,
+	);
+
+	return $items;
+}
+
+function mijncavaria_show() {
+	global $user;
+	
+	civicrm_initialize();
+	
+	// get the contact id of current drupal user
+	try {
+		$params = array(
+			'uf_id' => $user->uid,
+		);
+		$results = civicrm_api3('UFMatch', 'getsingle', $params);
+
+    $currentContact = new MyCavariaIndividual($results['contact_id']);
+		$userID = $results['contact_id'];
+	}
+	catch (Exception $e) {
+	  // user has no civicrm contact, exit
+		return $e->getMessage();
+	}
+
+	$html = 'U kan geen organisaties wijzigen';
+
+	// show the list of organizations (if applicable)
+  if (count($currentContact->organizations) > 0) {
+    $html = '<h2>Uw organisaties</h2>';
+
+    foreach ($currentContact->organizations as $organization) {
+      $html .= '<div class="myCavariaBlock">';
+
+      $html .= '<p>';
+      $html .= "{$organization->name}<br>";
+      $html .= "{$organization->street}<br>";
+      if ($organization->addressLine1) {
+        $html .= "{$organization->addressLine1}<br>";
+        $html .= "{$organization->addressLine2}<br>";
+      }
+      $html .= "{$organization->postalCode} {$organization->city}<br>";
+      $html .= '</p>';
+
+      $urlParameters = array(
+        'a' => $organization->id,
+        'b' => $organization->hash,
+      );
+      $url = url('wijzigorganisatie', $urlParameters);
+      $html .= "<p><a href=\"$url\">wijzig</a></p>";
+
+      $html .= '</div>';
+    }
+  }
+  else {
+    $html = '';
+  }
+
+  return $html;
+}
