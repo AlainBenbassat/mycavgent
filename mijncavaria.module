@@ -7,12 +7,21 @@ function mijncavaria_menu() {
 	$items = array();
 
 	$items['mijncavaria'] = array(
-		'title'            => t('Mijn Cavaria'),
-		'page callback'    => 'mijncavaria_show',
+		'title' => t('Mijn Cavaria'),
+		'page callback' => 'mijncavaria_show',
 		'access callback' => 'user_is_logged_in',
 		'description' => t('my organizations'),
 		'type' => MENU_CALLBACK,
 	);
+
+  $items['mijncavaria_wijzigorganisatie'] = array(
+    'title' => t('Mijn cavaria'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mijncavaria_organization_form'),
+    'access callback' => 'user_is_logged_in',
+    'type' => MENU_CALLBACK,
+    'file' => 'mijncavaria_organization.inc',
+  );
 
 	return $items;
 }
@@ -24,20 +33,20 @@ function mijncavaria_show() {
 	
 	// get the contact id of current drupal user
 	try {
+	  // get the contact details of the current drupal user
 		$params = array(
 			'uf_id' => $user->uid,
 		);
 		$results = civicrm_api3('UFMatch', 'getsingle', $params);
 
     $currentContact = new MyCavariaIndividual($results['contact_id']);
-		$userID = $results['contact_id'];
 	}
 	catch (Exception $e) {
 	  // user has no civicrm contact, exit
 		return $e->getMessage();
 	}
 
-	$html = 'U kan geen organisaties wijzigen';
+	$html = '<p>geen organisaties gevonden</p>';
 
 	// show the list of organizations (if applicable)
   if (count($currentContact->organizations) > 0) {
@@ -57,10 +66,12 @@ function mijncavaria_show() {
       $html .= '</p>';
 
       $urlParameters = array(
-        'a' => $organization->id,
-        'b' => $organization->hash,
+        'query' => array(
+          'a' => $organization->id,
+          'b' => $organization->hash,
+        ),
       );
-      $url = url('wijzigorganisatie', $urlParameters);
+      $url = url('mijncavaria_wijzigorganisatie', $urlParameters);
       $html .= "<p><a href=\"$url\">wijzig</a></p>";
 
       $html .= '</div>';
