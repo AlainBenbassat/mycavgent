@@ -7,10 +7,26 @@ class MyCavariaIndividual {
   public $lastName = '';
   public $organizations = array();
 
-  public function __construct($id) {
+  public function __construct($contact_id = NULL) {
+    global $user;
+
+    if (!isset($contact_id)) {
+      // no explicit contact id is given, get the one of the current drupal user
+      $params = array(
+        'uf_id' => $user->uid,
+        'sequential' => 1,
+      );
+      $results = civicrm_api3('UFMatch', 'get', $params);
+      if ($results['count'] == 0) {
+        throw new Exception("U hebt een Drupal login, maar geen overeenkomstig CiviCRM contact.");
+      }
+
+      $contact_id = $results['values']['0']['contact_id'];
+    }
+
     // get the contact
     $contact = civicrm_api3('Contact', 'getsingle', array(
-      'id' => $id,
+      'id' => $contact_id,
       'contact_type' => 'Individual',
     ));
 

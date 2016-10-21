@@ -33,6 +33,16 @@ function mijncavaria_organization_form() {
     return $form;
   }
 
+  $form['a'] = array(
+    '#type' => 'hidden',
+    '#value' => $organization->id,
+  );
+
+  $form['b'] = array(
+    '#type' => 'hidden',
+    '#value' => $organization->hash,
+  );
+
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => 'Naam organisatie',
@@ -88,6 +98,27 @@ function mijncavaria_organization_form() {
 }
 
 function mijncavaria_organization_form_submit($form, &$form_state) {
-  drupal_set_message('Gegevens van ' . $form_state['values']['name'] . ' zijn bijgewerkt.');
+  try {
+    // get the current contact
+    $currentContact = new MyCavariaIndividual();
+
+    // make sure the submitted organization is valid
+    if (array_key_exists($form_state['values']['a'], $currentContact->organizations)) {
+      // update the org. data
+      $currentContact->organizations[$form_state['values']['a']]->update($form_state['values']);
+    }
+    else {
+      throw new Exception('Kan de gegevens de organisatie niet bewaren. Foutcode = 2.');
+    }
+
+    $message = 'Gegevens van ' . $form_state['values']['name'] . ' zijn bijgewerkt.';
+    $messageType = 'status';
+  }
+  catch (Exception $e) {
+    $message = $e->getMessage();
+    $messageType = 'error';
+  }
+
+  drupal_set_message($message, $messageType);
   $form_state['redirect'] = 'mijncavaria';
 }

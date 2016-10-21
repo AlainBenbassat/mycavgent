@@ -27,19 +27,11 @@ function mijncavaria_menu() {
 }
 
 function mijncavaria_show() {
-	global $user;
-	
 	civicrm_initialize();
 	
-	// get the contact id of current drupal user
+	// get the contact details of the current drupal user
 	try {
-	  // get the contact details of the current drupal user
-		$params = array(
-			'uf_id' => $user->uid,
-		);
-		$results = civicrm_api3('UFMatch', 'getsingle', $params);
-
-    $currentContact = new MyCavariaIndividual($results['contact_id']);
+    $currentContact = new MyCavariaIndividual();
 	}
 	catch (Exception $e) {
 	  // user has no civicrm contact, exit
@@ -60,6 +52,8 @@ function mijncavaria_show() {
       $html .= "{$organization->street}<br>";
       if ($organization->addressLine1) {
         $html .= "{$organization->addressLine1}<br>";
+      }
+      if ($organization->addressLine2) {
         $html .= "{$organization->addressLine2}<br>";
       }
       $html .= "{$organization->postalCode} {$organization->city}<br>";
